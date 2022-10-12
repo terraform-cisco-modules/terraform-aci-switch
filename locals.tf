@@ -1,6 +1,8 @@
 locals {
   defaults = lookup(var.model, "defaults", {})
   switch   = lookup(var.model, "switch", {})
+  sprofile = local.defaults.switch.switch_profiles
+  vpcs     = local.defaults.switch.vpc_domains
 
   #__________________________________________________________
   #
@@ -8,112 +10,129 @@ locals {
   #__________________________________________________________
 
   switch_profiles = {
-    for k, v in var.switch_profiles : k => {
-      annotation        = v.annotation != null ? v.annotation : ""
-      description       = v.description != null ? v.description : ""
-      external_pool_id  = length(compact([v.external_pool_id])) > 0 ? v.external_pool_id : 0
-      inband_addressing = v.inband_addressing != null ? v.inband_addressing : []
-      interfaces        = v.interfaces != null ? v.interfaces : []
-      policy_group      = v.policy_group != null ? v.policy_group : "default"
-      monitoring_policy = v.monitoring_policy != null ? v.monitoring_policy : "default"
+    for k, v in lookup(local.switch, "switch_profiles", []) : k => {
+      annotation = coalesce(lookup(v, "annotation", local.sprofile.annotation
+      ), local.defaults.annotation)
+      description       = lookup(v, "description", local.sprofile.description)
+      external_pool_id  = lookup(v, "external_pool_id", local.sprofile.external_pool_id)
+      inband_addressing = lookup(v, "inband_addressing", [])
+      interfaces = [
+        for i in lookup(v, "interfaces", []) : {
+          description = lookup(i, "description", local.sprofile.interfaces.description)
+          interface   = i.interface
+          interface_description = lookup(
+            i, "interface_description", local.sprofile.interfaces.interface_description
+          )
+          policy_group = lookup(i, "policy_group", local.sprofile.interfaces.policy_group)
+          policy_group_type = lookup(
+            i, "policy_group_type", local.sprofile.interfaces.policy_group_type
+          )
+          sub_port = lookup(i, "sub_port", local.sprofile.interfaces.sub_port)
+
+        }
+      ]
+      policy_group      = lookup(v, "policy_group", local.sprofile.policy_group)
+      monitoring_policy = lookup(v, "monitoring_policy", local.sprofile.monitoring_policy)
       name              = v.name
-      node_type         = v.node_type != null ? v.node_type : "leaf"
-      ooband_addressing = v.ooband_addressing != null ? v.ooband_addressing : []
-      pod_id            = v.pod_id != null ? v.pod_id : 1
-      role              = v.role != null ? v.role : "unspecified"
+      node_type         = lookup(v, "node_type", local.sprofile.node_type)
+      ooband_addressing = lookup(v, "ooband_addressing", [])
+      pod_id            = lookup(v, "pod_id", local.sprofile.pod_id)
+      role              = lookup(v, "role", local.sprofile.role)
       serial_number     = v.serial_number
-      two_slot_leaf     = v.two_slot_leaf != null ? v.two_slot_leaf : false
+      two_slot_leaf     = lookup(v, "two_slot_leaf", local.sprofile.two_slot_leaf)
     }
   }
 
-  interface_selectors_loop = flatten([
-    for k, v in local.switch_profiles : [
-      for s in v.interfaces : {
-        annotation            = v.annotation != null ? v.annotation : ""
-        description           = s.description != null ? s.description : ""
-        interface_description = s.interface_description != null ? s.interface_description : ""
-        interface_name = coalesce(s.sub_port, false) == true && v.two_slot_leaf == true && length(
-          regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-00${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
-          )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == true && length(
-          regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-0${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
-          )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == true && length(
-          regexall("^\\d{3}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
-          )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == true && length(
-          regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-00${element(split("/", s.interface), 1
-          )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == true && length(
-          regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-0${element(split("/", s.interface), 1
-          )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == true && length(
-          regexall("^\\d{3}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-${element(split("/", s.interface), 1
-          )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == false && length(
-          regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-0${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
-          )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == false && length(
-          regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
-          )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == false && length(
-          regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-0${element(split("/", s.interface), 1
-          )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == false && length(
-          regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
-            )}-${element(split("/", s.interface), 1
-        )}" : ""
-        key1              = k
-        key2              = s.interface
-        module            = element(split("/", s.interface), 0)
-        name              = v.name
-        node_type         = v.node_type
-        port              = element(split("/", s.interface), 1)
-        policy_group      = s.policy_group != null ? s.policy_group : ""
-        policy_group_type = s.policy_group_type != null ? s.policy_group_type : "access"
-        sub_port          = s.sub_port != false ? element(split("/", s.interface), 2) : ""
-      }
-    ]
-  ])
-
-
   interface_selectors = {
-    for k, v in local.interface_selectors_loop : "${v.key1}_Eth${v.key2}" => v
+    for i in flatten([
+      for k, v in local.switch_profiles : [
+        for s in v.interfaces : {
+          annotation            = v.annotation
+          description           = s.description
+          interface_description = s.interface_description
+          interface_name = coalesce(s.sub_port, false) == true && v.two_slot_leaf == true && length(
+            regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-00${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
+            )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == true && length(
+            regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-0${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
+            )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == true && length(
+            regexall("^\\d{3}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
+            )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == true && length(
+            regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-00${element(split("/", s.interface), 1
+            )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == true && length(
+            regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-0${element(split("/", s.interface), 1
+            )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == true && length(
+            regexall("^\\d{3}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-${element(split("/", s.interface), 1
+            )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == false && length(
+            regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-0${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
+            )}" : coalesce(s.sub_port, false) == true && v.two_slot_leaf == false && length(
+            regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-${element(split("/", s.interface), 1)}-${element(split("/", s.interface), 2
+            )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == false && length(
+            regexall("^\\d$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-0${element(split("/", s.interface), 1
+            )}" : coalesce(s.sub_port, false) == false && v.two_slot_leaf == false && length(
+            regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
+              )}-${element(split("/", s.interface), 1
+          )}" : ""
+          node_id           = k
+          interface         = s.interface
+          module            = element(split("/", s.interface), 0)
+          name              = v.name
+          node_type         = v.node_type
+          port              = element(split("/", s.interface), 1)
+          policy_group      = s.policy_group
+          policy_group_type = s.policy_group_type
+          sub_port          = s.sub_port != false ? element(split("/", s.interface), 2) : ""
+        }
+      ]
+    ]) : "${i.node_id}_Eth${i.interface}" => i
   }
 
-  inband_loop = flatten([
-    for k, v in local.switch_profiles : [
-      for s in v.inband_addressing : {
-        annotation          = v.annotation != null ? v.annotation : ""
-        ipv4_address        = s.ipv4_address != null ? s.ipv4_address : ""
-        ipv4_gateway        = s.ipv4_gateway != null ? s.ipv4_gateway : ""
-        ipv6_address        = s.ipv6_address != null ? s.ipv6_address : ""
-        ipv6_gateway        = s.ipv6_gateway != null ? s.ipv6_gateway : ""
-        management_epg      = s.management_epg != null ? s.management_epg : "default"
-        management_epg_type = "inb"
-        node_id             = k
-        pod_id              = v.pod_id
-      }
-    ]
-  ])
-  inband = { for k, v in local.inband_loop : "${v.node_id}_${v.management_epg_type}" => v }
-
-  ooband_loop = flatten([
-    for k, v in local.switch_profiles : [
-      for s in v.ooband_addressing : {
-        annotation          = v.annotation != null ? v.annotation : ""
-        ipv4_address        = s.ipv4_address != null ? s.ipv4_address : ""
-        ipv4_gateway        = s.ipv4_gateway != null ? s.ipv4_gateway : ""
-        ipv6_address        = s.ipv6_address != null ? s.ipv6_address : ""
-        ipv6_gateway        = s.ipv6_gateway != null ? s.ipv6_gateway : ""
-        management_epg      = s.management_epg != null ? s.management_epg : "default"
-        management_epg_type = "oob"
-        node_id             = k
-        pod_id              = v.pod_id
-      }
-    ]
-  ])
-  ooband = { for k, v in local.ooband_loop : "${v.node_id}_${v.management_epg_type}" => v }
+  inband = {
+    for i in flatten([
+      for k, v in local.switch_profiles : [
+        for s in { "default" = v.inband_addressing } : {
+          annotation         = v.annotation
+          ipv4_address       = lookup(s, "ipv4_address", "")
+          ipv4_gateway       = lookup(s, "ipv4_gateway", "")
+          ipv6_address       = lookup(s, "ipv6_address", "")
+          ipv6_gateway       = lookup(s, "ipv6_gateway", "")
+          management_epg = lookup(
+            s, "management_epg", local.sprofile.inband_addressing.management_epg
+          )
+          mgmt_epg_type = "inb"
+          node_id       = k
+          pod_id        = v.pod_id
+        }
+      ]
+    ]) : "${i.node_id}_${i.mgmt_epg_type}" => i
+  }
+  ooband = {
+    for i in flatten([
+      for k, v in local.switch_profiles : [
+        for s in { "default" = v.ooband_addressing } : {
+          annotation         = v.annotation
+          ipv4_address       = lookup(s, "ipv4_address", "")
+          ipv4_gateway       = lookup(s, "ipv4_gateway", "")
+          ipv6_address       = lookup(s, "ipv6_address", "")
+          ipv6_gateway       = lookup(s, "ipv6_gateway", "")
+          management_epg = lookup(
+            s, "management_epg", local.sprofile.ooband_addressing.management_epg
+          )
+          mgmt_epg_type = "oob"
+          node_id       = k
+          pod_id        = v.pod_id
+        }
+      ]
+    ]) : "${i.node_id}_${i.mgmt_epg_type}" => i
+  }
 
   static_node_mgmt_addresses = merge(local.inband, local.ooband)
 
@@ -123,12 +142,13 @@ locals {
   #__________________________________________________________
 
   vpc_domains = {
-    for k, v in var.vpc_domains : k => {
-      annotation        = v.annotation != null ? v.annotation : ""
+    for k, v in lookup(local.switch, "vpc_domains", []) : k => {
+      annotation = coalesce(lookup(v, "annotation", local.vpcs.annotation
+      ), local.defaults.annotation)
       domain_id         = v.domain_id
-      switches          = v.switches != null ? v.switches : []
-      vpc_domain_policy = v.vpc_domain_policy != null ? v.vpc_domain_policy : "default"
+      name              = v.name
+      switches          = lookup(v, "switches", local.vpcs.switches)
+      vpc_domain_policy = lookup(v, "vpc_domain_policy", local.vpcs.vpc_domain_policy)
     }
   }
-
 }

@@ -9,7 +9,7 @@ ________________________________________________________________________________
 */
 resource "aci_leaf_interface_profile" "leaf_interface_profiles" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
-  annotation  = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation  = each.value.annotation
   description = each.value.description
   name        = each.value.name
 }
@@ -29,7 +29,7 @@ resource "aci_leaf_profile" "leaf_profiles" {
     aci_leaf_interface_profile.leaf_interface_profiles
   ]
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
-  annotation  = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation  = each.value.annotation
   description = each.value.description
   name        = each.value.name
   relation_infra_rs_acc_port_p = [
@@ -52,8 +52,10 @@ resource "aci_leaf_selector" "leaf_selectors" {
   depends_on = [
     aci_leaf_profile.leaf_profiles,
   ]
-  for_each                         = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
-  annotation                       = each.value.annotation != "" ? each.value.annotation : var.annotation
+  for_each = {
+    for k, v in local.switch_profiles : k => v if v.node_type != "spine"
+  }
+  annotation                       = each.value.annotation
   description                      = each.value.description
   leaf_profile_dn                  = aci_leaf_profile.leaf_profiles[each.key].id
   name                             = each.value.name
@@ -66,7 +68,7 @@ resource "aci_node_block" "leaf_profile_blocks" {
     aci_leaf_selector.leaf_selectors
   ]
   for_each              = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
-  annotation            = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation            = each.value.annotation
   description           = each.value.description
   from_                 = each.key
   name                  = "blk${each.key}-${each.key}"
@@ -85,7 +87,7 @@ ________________________________________________________________________________
 */
 resource "aci_spine_interface_profile" "spine_interface_profiles" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  annotation  = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation  = each.value.annotation
   description = each.value.description
   name        = each.value.name
 }
@@ -105,7 +107,7 @@ resource "aci_spine_profile" "spine_profiles" {
     aci_spine_interface_profile.spine_interface_profiles
   ]
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  annotation  = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation  = each.value.annotation
   description = each.value.description
   name        = each.value.name
   relation_infra_rs_sp_acc_port_p = [
@@ -128,7 +130,7 @@ resource "aci_spine_switch_association" "spine_profiles" {
     aci_spine_profile.spine_profiles,
   ]
   for_each                               = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  annotation                             = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation                             = each.value.annotation
   spine_profile_dn                       = aci_spine_profile.spine_profiles[each.key].id
   description                            = each.value.description
   name                                   = each.value.name
@@ -155,7 +157,7 @@ resource "aci_rest_managed" "spine_profile_node_blocks" {
   dn         = "uni/infra/spprof-${each.value.name}/spines-${each.value.name}-typ-range/nodeblk-blk${each.key}-${each.key}"
   class_name = "infraNodeBlk"
   content = {
-    # annotation = each.value.annotation != "" ? each.value.annotation : var.annotation
+    # annotation = each.value.annotation
     from_ = each.key
     to_   = each.key
     name  = "blk${each.key}-${each.key}"
@@ -177,8 +179,8 @@ resource "aci_access_port_selector" "leaf_interface_selectors" {
     aci_leaf_interface_profile.leaf_interface_profiles,
   ]
   for_each                  = { for k, v in local.interface_selectors : k => v if v.node_type != "spine" }
-  leaf_interface_profile_dn = aci_leaf_interface_profile.leaf_interface_profiles[each.value.key1].id
-  annotation                = each.value.annotation != "" ? each.value.annotation : var.annotation
+  leaf_interface_profile_dn = aci_leaf_interface_profile.leaf_interface_profiles[each.value.node_id].id
+  annotation                = each.value.annotation
   description               = each.value.description
   name                      = each.value.interface_name
   access_port_selector_type = "range"
@@ -208,7 +210,7 @@ resource "aci_access_port_block" "leaf_port_blocks" {
   ]
   for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port == "" && v.node_type != "spine" }
   access_port_selector_dn = aci_access_port_selector.leaf_interface_selectors[each.key].id
-  annotation              = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation              = each.value.annotation
   description             = each.value.interface_description
   from_card               = each.value.module
   from_port               = each.value.port
@@ -234,7 +236,7 @@ resource "aci_access_sub_port_block" "leaf_port_subblocks" {
   ]
   for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port != "" && v.node_type != "spine" }
   access_port_selector_dn = aci_access_port_selector.leaf_interface_selectors[each.key].id
-  annotation              = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation              = each.value.annotation
   description             = each.value.interface_description
   from_card               = each.value.module
   from_port               = each.value.port
@@ -263,7 +265,7 @@ resource "aci_rest_managed" "spine_interface_selectors" {
   dn         = "uni/infra/spaccportprof-${each.value.name}/shports-${each.value.interface_name}-typ-range"
   class_name = "infraSHPortS"
   content = {
-    # annotation = each.value.annotation != "" ? each.value.annotation : var.annotation
+    # annotation = each.value.annotation
     name  = each.value.interface_name
     descr = each.value.description
   }
@@ -311,12 +313,12 @@ resource "aci_static_node_mgmt_address" "static_node_mgmt_addresses" {
   ]
   for_each   = local.static_node_mgmt_addresses
   addr       = each.value.ipv4_address
-  annotation = each.value.annotation != "" ? each.value.annotation : var.annotation
+  annotation = each.value.annotation
   # description       = each.value.description
   gw                = each.value.ipv4_gateway
-  management_epg_dn = "uni/tn-mgmt/mgmtp-default/${each.value.management_epg_type}-${each.value.management_epg}"
+  management_epg_dn = "uni/tn-mgmt/mgmtp-default/${each.value.mgmt_epg_type}-${each.value.management_epg}"
   t_dn              = "topology/pod-${each.value.pod_id}/node-${each.value.node_id}"
-  type              = each.value.management_epg_type == "inb" ? "in_band" : "out_of_band"
+  type              = each.value.mgmt_epg_type == "inb" ? "in_band" : "out_of_band"
   v6_addr           = each.value.ipv6_address
   v6_gw             = each.value.ipv6_gateway
 }

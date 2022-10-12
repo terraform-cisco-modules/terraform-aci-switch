@@ -26,7 +26,6 @@ A comprehensive example using this module is available here: https://github.com/
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_model"></a> [model](#input\_model) | Model data. | `any` | n/a | yes |
-| <a name="input_aes_passphrase"></a> [aes\_passphrase](#input\_aes\_passphrase) | Global AES Passphrase. | `string` | n/a | yes |
 ## Outputs
 
 No outputs.

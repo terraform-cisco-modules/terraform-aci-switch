@@ -7,14 +7,3 @@ variable "model" {
   description = "Model data."
   type        = any
 }
-
-/*_____________________________________________________________________________________________________________________
-
-System > System Settings: Global AES Encryption Setting — Sensitive Variables
-_______________________________________________________________________________________________________________________
-*/
-variable "aes_passphrase" {
-  description = "Global AES Passphrase."
-  sensitive   = true
-  type        = string
-}
