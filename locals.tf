@@ -10,7 +10,7 @@ locals {
   #__________________________________________________________
 
   switch_profiles = {
-    for k, v in lookup(local.switch, "switch_profiles", []) : k => {
+    for k, v in lookup(local.switch, "switch_profiles", []) : v.name => {
       annotation = coalesce(lookup(v, "annotation", local.sprofile.annotation
       ), local.defaults.annotation)
       description       = lookup(v, "description", local.sprofile.description)
@@ -34,6 +34,7 @@ locals {
       policy_group      = lookup(v, "policy_group", local.sprofile.policy_group)
       monitoring_policy = lookup(v, "monitoring_policy", local.sprofile.monitoring_policy)
       name              = v.name
+      node_id           = v.node
       node_type         = lookup(v, "node_type", local.sprofile.node_type)
       ooband_addressing = lookup(v, "ooband_addressing", [])
       pod_id            = lookup(v, "pod_id", local.sprofile.pod_id)
@@ -92,7 +93,7 @@ locals {
           sub_port          = s.sub_port != false ? element(split("/", s.interface), 2) : ""
         }
       ]
-    ]) : "${i.node_id}_Eth${i.interface}" => i
+    ]) : "${i.node_id}-Eth${i.interface}" => i
   }
 
   inband = {
@@ -112,7 +113,7 @@ locals {
           pod_id        = v.pod_id
         }
       ]
-    ]) : "${i.node_id}_${i.mgmt_epg_type}" => i
+    ]) : "${i.node_id}-${i.mgmt_epg_type}-${i.management_epg}" => i
   }
   ooband = {
     for i in flatten([
@@ -131,7 +132,7 @@ locals {
           pod_id        = v.pod_id
         }
       ]
-    ]) : "${i.node_id}_${i.mgmt_epg_type}" => i
+    ]) : "${i.node_id}-${i.mgmt_epg_type}-${i.management_epg}" => i
   }
 
   static_node_mgmt_addresses = merge(local.inband, local.ooband)
