@@ -113,7 +113,7 @@ locals {
           pod_id        = v.pod_id
         }
       ]
-    ]) : "${i.node_id}-${i.mgmt_epg_type}-${i.management_epg}" => i
+    ]) : "${i.node_id}:${i.mgmt_epg_type}:${i.management_epg}" => i
   }
   ooband = {
     for i in flatten([
@@ -132,7 +132,7 @@ locals {
           pod_id        = v.pod_id
         }
       ]
-    ]) : "${i.node_id}-${i.mgmt_epg_type}-${i.management_epg}" => i
+    ]) : "${i.node_id}:${i.mgmt_epg_type}:${i.management_epg}" => i
   }
 
   static_node_mgmt_addresses = merge(local.inband, local.ooband)
