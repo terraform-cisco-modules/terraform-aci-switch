@@ -12,7 +12,7 @@ locals {
   switch_profiles = {
     for k, v in lookup(local.switch, "switch_profiles", []) : v.name => {
       annotation = coalesce(lookup(v, "annotation", local.sprofile.annotation
-      ), local.defaults.annotation)
+      ), var.annotation)
       description       = lookup(v, "description", local.sprofile.description)
       external_pool_id  = lookup(v, "external_pool_id", local.sprofile.external_pool_id)
       inband_addressing = lookup(v, "inband_addressing", [])
@@ -145,7 +145,7 @@ locals {
   vpc_domains = {
     for k, v in lookup(local.switch, "vpc_domains", []) : k => {
       annotation = coalesce(lookup(v, "annotation", local.vpcs.annotation
-      ), local.defaults.annotation)
+      ), var.annotation)
       domain_id         = v.domain_id
       name              = v.name
       switches          = lookup(v, "switches", local.vpcs.switches)
