@@ -34,7 +34,7 @@ locals {
       policy_group      = lookup(v, "policy_group", local.sprofile.policy_group)
       monitoring_policy = lookup(v, "monitoring_policy", local.sprofile.monitoring_policy)
       name              = v.name
-      node_id           = v.node
+      node_id           = v.node_id
       node_type         = lookup(v, "node_type", local.sprofile.node_type)
       ooband_addressing = lookup(v, "ooband_addressing", [])
       pod_id            = lookup(v, "pod_id", local.sprofile.pod_id)
