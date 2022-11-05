@@ -10,7 +10,7 @@ locals {
   #__________________________________________________________
 
   switch_profiles = {
-    for k, v in lookup(local.switch, "switch_profiles", []) : v.name => {
+    for k, v in lookup(local.switch, "switch_profiles", []) : v.node_id => {
       annotation = coalesce(lookup(v, "annotation", local.sprofile.annotation
       ), var.annotation)
       description       = lookup(v, "description", local.sprofile.description)
@@ -82,7 +82,7 @@ locals {
             regexall("^\\d{2}$", element(split("/", s.interface), 1))) > 0 ? "Eth${element(split("/", s.interface), 0
               )}-${element(split("/", s.interface), 1
           )}" : ""
-          node_id           = k
+          node_id           = v.node_id
           interface         = s.interface
           module            = element(split("/", s.interface), 0)
           name              = v.name
@@ -109,7 +109,8 @@ locals {
             s, "management_epg", local.sprofile.inband_addressing.management_epg
           )
           mgmt_epg_type = "inb"
-          node_id       = k
+          name          = v.name
+          node_id       = v.node_id
           pod_id        = v.pod_id
         }
       ]
@@ -128,6 +129,7 @@ locals {
             s, "management_epg", local.sprofile.ooband_addressing.management_epg
           )
           mgmt_epg_type = "oob"
+          name          = v.name
           node_id       = k
           pod_id        = v.pod_id
         }
@@ -143,7 +145,7 @@ locals {
   #__________________________________________________________
 
   vpc_domains = {
-    for k, v in lookup(local.switch, "vpc_domains", []) : k => {
+    for k, v in lookup(local.switch, "vpc_domains", []) : v.domain_id => {
       annotation = coalesce(lookup(v, "annotation", local.vpcs.annotation
       ), var.annotation)
       domain_id         = v.domain_id

@@ -70,10 +70,10 @@ resource "aci_node_block" "leaf_profile_blocks" {
   for_each              = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
   annotation            = each.value.annotation
   description           = each.value.description
-  from_                 = each.key
-  name                  = "blk${each.key}-${each.key}"
+  from_                 = each.value.node_id
+  name                  = "blk${each.value.node_id}-${each.value.node_id}"
   switch_association_dn = aci_leaf_selector.leaf_selectors[each.key].id
-  to_                   = each.key
+  to_                   = each.value.node_id
 }
 
 /*_____________________________________________________________________________________________________________________

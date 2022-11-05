@@ -10,7 +10,7 @@ resource "aci_vpc_explicit_protection_group" "vpc_domains" {
   depends_on = [
     aci_rest_managed.fabric_membership,
   ]
-  for_each                         = { for k, v in local.vpc_domains : v.name => v if length(v.switches) == 2 }
+  for_each                         = { for k, v in local.vpc_domains : v.domain_id => v if length(v.switches) == 2 }
   annotation                       = each.value.annotation
   name                             = each.value.name
   switch1                          = element(each.value.switches, 0)
