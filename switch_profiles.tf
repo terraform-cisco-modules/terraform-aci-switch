@@ -11,7 +11,7 @@ resource "aci_leaf_interface_profile" "leaf_interface_profiles" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
   annotation  = each.value.annotation
   description = each.value.description
-  name        = each.value.name
+  name        = "${local.sprofile.interface_profiles_prefix}${each.value.name}${local.sprofile.interface_profiles_suffix}"
 }
 
 
@@ -31,7 +31,7 @@ resource "aci_leaf_profile" "leaf_profiles" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
   annotation  = each.value.annotation
   description = each.value.description
-  name        = each.value.name
+  name        = "${local.sprofile.leaf_profiles_prefix}${each.value.name}${local.sprofile.leaf_profiles_suffix}"
   relation_infra_rs_acc_port_p = [
     aci_leaf_interface_profile.leaf_interface_profiles[each.key].id
   ]
@@ -89,7 +89,7 @@ resource "aci_spine_interface_profile" "spine_interface_profiles" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
   annotation  = each.value.annotation
   description = each.value.description
-  name        = each.value.name
+  name        = "${local.sprofile.interface_profiles_prefix}${each.value.name}${local.sprofile.interface_profiles_suffix}"
 }
 
 
@@ -109,7 +109,7 @@ resource "aci_spine_profile" "spine_profiles" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
   annotation  = each.value.annotation
   description = each.value.description
-  name        = each.value.name
+  name        = "${local.sprofile.spine_profiles_prefix}${each.value.name}${local.sprofile.spine_profiles_suffix}"
   relation_infra_rs_sp_acc_port_p = [
     aci_spine_interface_profile.spine_interface_profiles[each.key].id
   ]
@@ -154,7 +154,7 @@ resource "aci_rest_managed" "spine_profile_node_blocks" {
     aci_spine_switch_association.spine_profiles
   ]
   for_each   = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  dn         = "uni/infra/spprof-${each.value.name}/spines-${each.value.name}-typ-range/nodeblk-blk${each.key}-${each.key}"
+  dn         = "uni/infra/spprof-${local.sprofile.spine_profiles_prefix}${each.value.name}${local.sprofile.spine_profiles_suffix}/spines-${each.value.name}-typ-range/nodeblk-blk${each.key}-${each.key}"
   class_name = "infraNodeBlk"
   content = {
     # annotation = each.value.annotation
@@ -262,7 +262,7 @@ resource "aci_rest_managed" "spine_interface_selectors" {
     aci_spine_interface_profile.spine_interface_profiles
   ]
   for_each   = { for k, v in local.interface_selectors : k => v if v.node_type == "spine" }
-  dn         = "uni/infra/spaccportprof-${each.value.name}/shports-${each.value.interface_name}-typ-range"
+  dn         = "uni/infra/spaccportprof-${local.sprofile.spine_profiles_prefix}${each.value.name}${local.sprofile.spine_profiles_suffix}/shports-${each.value.interface_name}-typ-range"
   class_name = "infraSHPortS"
   content = {
     # annotation = each.value.annotation
@@ -287,7 +287,7 @@ resource "aci_rest_managed" "spine_interface_policy_group" {
     aci_spine_interface_profile.spine_interface_profiles
   ]
   for_each   = { for k, v in local.interface_selectors : k => v if v.node_type == "spine" && v.policy_group != "" }
-  dn         = "uni/infra/spaccportprof-${each.value.name}/shports-${each.value.interface_name}-typ-range/rsspAccGrp"
+  dn         = "uni/infra/spaccportprof-${local.sprofile.spine_profiles_prefix}${each.value.name}${local.sprofile.spine_profiles_suffix}/shports-${each.value.interface_name}-typ-range/rsspAccGrp"
   class_name = "infraRsSpAccGrp"
   content = {
     tDn = length(compact([each.value.policy_group])
