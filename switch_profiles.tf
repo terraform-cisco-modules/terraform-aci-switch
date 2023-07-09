@@ -7,11 +7,10 @@ GUI Location:
  - Fabric > Access Policies > Interfaces > Leaf Interfaces > Profiles > {name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_leaf_interface_profile" "leaf_interface_profiles" {
+resource "aci_leaf_interface_profile" "map" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
-  annotation  = each.value.annotation
   description = each.value.description
-  name        = "${local.sprofile.interface_profiles_prefix}${each.value.name}${local.sprofile.interface_profiles_suffix}"
+  name        = "${local.npfx.leaf.interface_profiles}${each.value.name}${local.nsfx.leaf.interface_profiles}"
 }
 
 
@@ -24,17 +23,14 @@ GUI Location:
  - Fabric > Access Policies > Switches > Leaf Switches > Profiles > {Name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_leaf_profile" "leaf_profiles" {
+resource "aci_leaf_profile" "map" {
   depends_on = [
-    aci_leaf_interface_profile.leaf_interface_profiles
+    aci_leaf_interface_profile.map
   ]
-  for_each    = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
-  annotation  = each.value.annotation
-  description = each.value.description
-  name        = "${local.sprofile.leaf_profiles_prefix}${each.value.name}${local.sprofile.leaf_profiles_suffix}"
-  relation_infra_rs_acc_port_p = [
-    aci_leaf_interface_profile.leaf_interface_profiles[each.key].id
-  ]
+  for_each                     = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
+  description                  = each.value.description
+  name                         = "${local.npfx.leaf.switch_profiles}${each.value.name}${local.nsfx.leaf.switch_profiles}"
+  relation_infra_rs_acc_port_p = [aci_leaf_interface_profile.map[each.key].id]
 }
 
 
@@ -48,16 +44,15 @@ GUI Location:
  - Fabric > Access Policies > Switches > Leaf Switches > Profiles > {name}: Leaf Selectors Policy Group: {selector_name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_leaf_selector" "leaf_selectors" {
+resource "aci_leaf_selector" "map" {
   depends_on = [
-    aci_leaf_profile.leaf_profiles,
+    aci_leaf_profile.map,
   ]
   for_each = {
     for k, v in local.switch_profiles : k => v if v.node_type != "spine"
   }
-  annotation                       = each.value.annotation
   description                      = each.value.description
-  leaf_profile_dn                  = aci_leaf_profile.leaf_profiles[each.key].id
+  leaf_profile_dn                  = aci_leaf_profile.map[each.key].id
   name                             = each.value.name
   relation_infra_rs_acc_node_p_grp = "uni/infra/funcprof/accnodepgrp-${each.value.policy_group}"
   switch_association_type          = "range"
@@ -65,14 +60,13 @@ resource "aci_leaf_selector" "leaf_selectors" {
 
 resource "aci_node_block" "leaf_profile_blocks" {
   depends_on = [
-    aci_leaf_selector.leaf_selectors
+    aci_leaf_selector.map
   ]
   for_each              = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
-  annotation            = each.value.annotation
   description           = each.value.description
   from_                 = each.value.node_id
   name                  = "blk${each.value.node_id}-${each.value.node_id}"
-  switch_association_dn = aci_leaf_selector.leaf_selectors[each.key].id
+  switch_association_dn = aci_leaf_selector.map[each.key].id
   to_                   = each.value.node_id
 }
 
@@ -85,11 +79,10 @@ GUI Location:
  - Fabric > Access Policies > Interfaces > Spine Interfaces > Profiles > {name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_spine_interface_profile" "spine_interface_profiles" {
+resource "aci_spine_interface_profile" "map" {
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  annotation  = each.value.annotation
   description = each.value.description
-  name        = "${local.sprofile.interface_profiles_prefix}${each.value.name}${local.sprofile.interface_profiles_suffix}"
+  name        = "${local.npfx.spine.interface_profiles}${each.value.name}${local.nsfx.spine.interface_profiles}"
 }
 
 
@@ -102,16 +95,15 @@ GUI Location:
  - Fabric > Access Policies > Switches > Spine Switches > Profiles > {Name}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_spine_profile" "spine_profiles" {
+resource "aci_spine_profile" "map" {
   depends_on = [
-    aci_spine_interface_profile.spine_interface_profiles
+    aci_spine_interface_profile.map
   ]
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  annotation  = each.value.annotation
   description = each.value.description
-  name        = "${local.sprofile.spine_profiles_prefix}${each.value.name}${local.sprofile.spine_profiles_suffix}"
+  name        = "${local.npfx.spine.switch_profiles}${each.value.name}${local.nsfx.spine.switch_profiles}"
   relation_infra_rs_sp_acc_port_p = [
-    aci_spine_interface_profile.spine_interface_profiles[each.key].id
+    aci_spine_interface_profile.map[each.key].id
   ]
 }
 
@@ -125,13 +117,12 @@ GUI Location:
  - Fabric > Access Policies > Switches > Spine Switches > Profiles > {name}: Spine Selectors [{name}]
 _______________________________________________________________________________________________________________________
 */
-resource "aci_spine_switch_association" "spine_profiles" {
+resource "aci_spine_switch_association" "map" {
   depends_on = [
-    aci_spine_profile.spine_profiles,
+    aci_spine_profile.map,
   ]
   for_each                               = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  annotation                             = each.value.annotation
-  spine_profile_dn                       = aci_spine_profile.spine_profiles[each.key].id
+  spine_profile_dn                       = aci_spine_profile.map[each.key].id
   description                            = each.value.description
   name                                   = each.value.name
   relation_infra_rs_spine_acc_node_p_grp = "uni/infra/funcprof/spaccnodepgrp-${each.value.policy_group}"
@@ -150,14 +141,13 @@ ________________________________________________________________________________
 */
 resource "aci_rest_managed" "spine_profile_node_blocks" {
   depends_on = [
-    aci_spine_profile.spine_profiles,
-    aci_spine_switch_association.spine_profiles
+    aci_spine_profile.map,
+    aci_spine_switch_association.map
   ]
   for_each   = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
-  dn         = "${aci_spine_profile.spine_profiles[each.key].id}/spines-${each.value.name}-typ-range/nodeblk-blk${each.key}-${each.key}"
+  dn         = "${aci_spine_profile.map[each.key].id}/spines-${each.value.name}-typ-range/nodeblk-blk${each.key}-${each.key}"
   class_name = "infraNodeBlk"
   content = {
-    # annotation = each.value.annotation
     from_ = each.key
     to_   = each.key
     name  = "blk${each.key}-${each.key}"
@@ -174,13 +164,12 @@ GUI Location:
  - Fabric > Access Policies > Interfaces > Leaf Interfaces > Profiles > {interface_profile}:{interface_selector}
 _______________________________________________________________________________________________________________________
 */
-resource "aci_access_port_selector" "leaf_interface_selectors" {
+resource "aci_access_port_selector" "map" {
   depends_on = [
-    aci_leaf_interface_profile.leaf_interface_profiles,
+    aci_leaf_interface_profile.map,
   ]
   for_each                  = { for k, v in local.interface_selectors : k => v if v.node_type != "spine" }
-  leaf_interface_profile_dn = aci_leaf_interface_profile.leaf_interface_profiles[each.value.node_id].id
-  annotation                = each.value.annotation
+  leaf_interface_profile_dn = aci_leaf_interface_profile.map[each.value.node_id].id
   description               = each.value.description
   name                      = each.value.interface_name
   access_port_selector_type = "range"
@@ -205,12 +194,11 @@ ________________________________________________________________________________
 */
 resource "aci_access_port_block" "leaf_port_blocks" {
   depends_on = [
-    aci_leaf_interface_profile.leaf_interface_profiles,
-    aci_access_port_selector.leaf_interface_selectors
+    aci_leaf_interface_profile.map,
+    aci_access_port_selector.map
   ]
   for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port == "" && v.node_type != "spine" }
-  access_port_selector_dn = aci_access_port_selector.leaf_interface_selectors[each.key].id
-  annotation              = each.value.annotation
+  access_port_selector_dn = aci_access_port_selector.map[each.key].id
   description             = each.value.interface_description
   from_card               = each.value.module
   from_port               = each.value.port
@@ -231,12 +219,11 @@ ________________________________________________________________________________
 */
 resource "aci_access_sub_port_block" "leaf_port_subblocks" {
   depends_on = [
-    aci_leaf_interface_profile.leaf_interface_profiles,
-    aci_access_port_selector.leaf_interface_selectors
+    aci_leaf_interface_profile.map,
+    aci_access_port_selector.map
   ]
   for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port != "" && v.node_type != "spine" }
-  access_port_selector_dn = aci_access_port_selector.leaf_interface_selectors[each.key].id
-  annotation              = each.value.annotation
+  access_port_selector_dn = aci_access_port_selector.map[each.key].id
   description             = each.value.interface_description
   from_card               = each.value.module
   from_port               = each.value.port
@@ -259,14 +246,13 @@ ________________________________________________________________________________
 */
 resource "aci_rest_managed" "spine_interface_selectors" {
   depends_on = [
-    aci_spine_interface_profile.spine_interface_profiles
+    aci_spine_interface_profile.map
   ]
   for_each   = { for k, v in local.interface_selectors : k => v if v.node_type == "spine" }
-  dn         = "${aci_spine_interface_profile.spine_interface_profiles[each.value.node_id].id}/shports-${each.value.interface_name}-typ-range"
+  dn         = "${aci_spine_interface_profile.map[each.value.node_id].id}/shports-${each.value.interface_name}-typ-range"
   class_name = "infraSHPortS"
   content = {
-    # annotation = each.value.annotation
-    name  = each.value.interface_name
+    #    name  = each.value.interface_name
     descr = each.value.description
   }
   child {
@@ -284,10 +270,10 @@ resource "aci_rest_managed" "spine_interface_selectors" {
 
 resource "aci_rest_managed" "spine_interface_policy_group" {
   depends_on = [
-    aci_spine_interface_profile.spine_interface_profiles
+    aci_spine_interface_profile.map
   ]
   for_each   = { for k, v in local.interface_selectors : k => v if v.node_type == "spine" && v.policy_group != "" }
-  dn         = "${aci_spine_interface_profile.spine_interface_profiles[each.value.node_id].id}/shports-${each.value.interface_name}-typ-range/rsspAccGrp"
+  dn         = "${aci_spine_interface_profile.map[each.value.node_id].id}/shports-${each.value.interface_name}-typ-range/rsspAccGrp"
   class_name = "infraRsSpAccGrp"
   content = {
     tDn = length(compact([each.value.policy_group])
@@ -311,9 +297,8 @@ resource "aci_static_node_mgmt_address" "static_node_mgmt_addresses" {
   depends_on = [
     aci_rest_managed.fabric_membership
   ]
-  for_each   = local.static_node_mgmt_addresses
-  addr       = each.value.ipv4_address
-  annotation = each.value.annotation
+  for_each = local.static_node_mgmt_addresses
+  addr     = each.value.ipv4_address
   # description       = each.value.description
   gw                = each.value.ipv4_gateway
   management_epg_dn = "uni/tn-mgmt/mgmtp-default/${each.value.mgmt_epg_type}-${each.value.management_epg}"

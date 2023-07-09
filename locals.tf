@@ -1,8 +1,15 @@
 locals {
-  defaults = lookup(var.model, "defaults", {})
-  switch   = lookup(var.model, "switch", {})
-  sprofile = local.defaults.switch.switch_profiles
-  vpcs     = local.defaults.switch.vpc_domains
+  defaults = yamldecode(file("${path.module}/defaults.yaml")).defaults.switch
+  sprofile = local.defaults.switch_profiles
+  vpcs     = local.defaults.vpc_domains
+  npfx = {
+    leaf  = merge(local.defaults.name_prefix.leaf, lookup(lookup(var.switch, "name_prefix", {}), "leaf", {}))
+    spine = merge(local.defaults.name_prefix.spine, lookup(lookup(var.switch, "name_prefix", {}), "spine", {}))
+  }
+  nsfx = {
+    leaf  = merge(local.defaults.name_prefix.leaf, lookup(lookup(var.switch, "name_prefix", {}), "leaf", {}))
+    spine = merge(local.defaults.name_prefix.spine, lookup(lookup(var.switch, "name_prefix", {}), "spine", {}))
+  }
 
   #__________________________________________________________
   #
@@ -10,9 +17,7 @@ locals {
   #__________________________________________________________
 
   switch_profiles = {
-    for k, v in lookup(local.switch, "switch_profiles", []) : v.node_id => {
-      annotation = coalesce(lookup(v, "annotation", local.sprofile.annotation
-      ), var.annotation)
+    for k, v in lookup(var.switch, "switch_profiles", []) : v.node_id => {
       description       = lookup(v, "description", local.sprofile.description)
       external_pool_id  = lookup(v, "external_pool_id", local.sprofile.external_pool_id)
       inband_addressing = lookup(v, "inband_addressing", [])
@@ -48,7 +53,6 @@ locals {
     for i in flatten([
       for k, v in local.switch_profiles : [
         for s in v.interfaces : {
-          annotation            = v.annotation
           description           = s.description
           interface_description = s.interface_description
           interface_name = coalesce(s.sub_port, false) == true && v.two_slot_leaf == true && length(
@@ -100,7 +104,6 @@ locals {
     for i in flatten([
       for k, v in local.switch_profiles : [
         for s in { "default" = v.inband_addressing } : {
-          annotation         = v.annotation
           ipv4_address       = lookup(s, "ipv4_address", "")
           ipv4_gateway       = lookup(s, "ipv4_gateway", "")
           ipv6_address       = lookup(s, "ipv6_address", "")
@@ -120,7 +123,6 @@ locals {
     for i in flatten([
       for k, v in local.switch_profiles : [
         for s in { "default" = v.ooband_addressing } : {
-          annotation         = v.annotation
           ipv4_address       = lookup(s, "ipv4_address", "")
           ipv4_gateway       = lookup(s, "ipv4_gateway", "")
           ipv6_address       = lookup(s, "ipv6_address", "")
@@ -145,9 +147,7 @@ locals {
   #__________________________________________________________
 
   vpc_domains = {
-    for k, v in lookup(local.switch, "vpc_domains", []) : v.domain_id => {
-      annotation = coalesce(lookup(v, "annotation", local.vpcs.annotation
-      ), var.annotation)
+    for k, v in lookup(var.switch, "vpc_domains", []) : v.domain_id => {
       domain_id         = v.domain_id
       name              = v.name
       switches          = lookup(v, "switches", local.vpcs.switches)

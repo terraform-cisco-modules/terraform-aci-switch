@@ -3,8 +3,8 @@
 Model Data from Top Level Module
 _______________________________________________________________________________________________________________________
 */
-variable "model" {
-  description = "Model data."
+variable "switch" {
+  description = "Switch Model data."
   type        = any
 }
 
@@ -14,12 +14,6 @@ Global Shared Variables
 _______________________________________________________________________________________________________________________
 */
 
-
-variable "annotation" {
-  default     = "orchestrator:terraform:easy-aci-v2.0"
-  description = "The Version of this Script."
-  type        = string
-}
 
 variable "annotations" {
   default = [
@@ -35,4 +29,10 @@ variable "annotations" {
       value = string
     }
   ))
+}
+
+variable "apic_version" {
+  default     = "5.2(4e)"
+  description = "The Version of ACI Running in the Environment."
+  type        = string
 }

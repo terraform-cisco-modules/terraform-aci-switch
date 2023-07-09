@@ -12,7 +12,6 @@ resource "aci_rest_managed" "fabric_membership" {
   dn         = "uni/controller/nodeidentpol/nodep-${each.value.serial_number}"
   class_name = "fabricNodeIdentP"
   content = {
-    # annotation = each.value.annotation
     extPoolId = each.value.node_type == "remote-leaf" ? each.value.external_pool_id : 0
     name      = each.value.name
     nodeId    = each.value.node_id
