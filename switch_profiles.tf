@@ -8,6 +8,7 @@ GUI Location:
 _______________________________________________________________________________________________________________________
 */
 resource "aci_leaf_interface_profile" "map" {
+  depends_on  = [aci_rest_managed.fabric_membership]
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
   description = each.value.description
   name        = "${local.npfx.leaf.interface_profiles}${each.value.name}${local.nsfx.leaf.interface_profiles}"
@@ -24,9 +25,7 @@ GUI Location:
 _______________________________________________________________________________________________________________________
 */
 resource "aci_leaf_profile" "map" {
-  depends_on = [
-    aci_leaf_interface_profile.map
-  ]
+  depends_on                   = [aci_leaf_interface_profile.map]
   for_each                     = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
   description                  = each.value.description
   name                         = "${local.npfx.leaf.switch_profiles}${each.value.name}${local.nsfx.leaf.switch_profiles}"
@@ -46,6 +45,7 @@ ________________________________________________________________________________
 */
 resource "aci_leaf_selector" "map" {
   depends_on = [
+    aci_rest_managed.fabric_membership,
     aci_leaf_profile.map,
   ]
   for_each = {
@@ -80,6 +80,7 @@ GUI Location:
 _______________________________________________________________________________________________________________________
 */
 resource "aci_spine_interface_profile" "map" {
+  depends_on  = [aci_rest_managed.fabric_membership]
   for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
   description = each.value.description
   name        = "${local.npfx.spine.interface_profiles}${each.value.name}${local.nsfx.spine.interface_profiles}"
@@ -293,12 +294,10 @@ GUI Location:
  - Tenants > mgmt > Node Management Addresses > Static Node Management Addresses
 _______________________________________________________________________________________________________________________
 */
-resource "aci_static_node_mgmt_address" "static_node_mgmt_addresses" {
-  depends_on = [
-    aci_rest_managed.fabric_membership
-  ]
-  for_each = local.static_node_mgmt_addresses
-  addr     = each.value.ipv4_address
+resource "aci_static_node_mgmt_address" "map" {
+  depends_on = [aci_rest_managed.fabric_membership]
+  for_each   = local.static_node_mgmt_addresses
+  addr       = each.value.ipv4_address
   # description       = each.value.description
   gw                = each.value.ipv4_gateway
   management_epg_dn = "uni/tn-mgmt/mgmtp-default/${each.value.mgmt_epg_type}-${each.value.management_epg}"

@@ -34,6 +34,7 @@ A comprehensive example using this module is available here: https://github.com/
 |------|-------------|
 | <a name="output_fabric_inventory"></a> [fabric\_inventory](#output\_fabric\_inventory) | Fabric Membership Identifiers: Fabric => Inventory => Fabric Membership |
 | <a name="output_interface_profiles"></a> [interface\_profiles](#output\_interface\_profiles) | Interface Profile Identifiers<br>      interfaces:<br>        leaf\_interface\_profiles:  Fabric => Access Policies => Interfaces => Leaf Interfaces => Profiles<br>        spine\_interface\_profiles: Fabric => Access Policies => Interfaces => Spine Interfaces => Profiles |
+| <a name="output_static_node_mgmt_address"></a> [static\_node\_mgmt\_address](#output\_static\_node\_mgmt\_address) | Static Node Management addresses: Tenants: {mgmt} => Node Management Addresses => Static Node Management Addresses |
 | <a name="output_switches"></a> [switches](#output\_switches) | Switch Identifiers<br>      switches:<br>        leaf\_profiles:  Fabric => Access Policies => Switches => Leaf Switches => Profiles<br>        spine\_profiles: Fabric => Access Policies => Switches => Spine Switches => Profiles |
 | <a name="output_vpc_domains"></a> [vpc\_domains](#output\_vpc\_domains) | VPC Domain Identifiers: Fabric => Access Policies => Policies => Switch => Virtual Port Channel default |
 ## Resources
@@ -54,6 +55,6 @@ A comprehensive example using this module is available here: https://github.com/
 | [aci_spine_interface_profile.map](https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/spine_interface_profile) | resource |
 | [aci_spine_profile.map](https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/spine_profile) | resource |
 | [aci_spine_switch_association.map](https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/spine_switch_association) | resource |
-| [aci_static_node_mgmt_address.static_node_mgmt_addresses](https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/static_node_mgmt_address) | resource |
+| [aci_static_node_mgmt_address.map](https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/static_node_mgmt_address) | resource |
 | [aci_vpc_explicit_protection_group.vpc_domains](https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs/resources/vpc_explicit_protection_group) | resource |
 <!-- END_TF_DOCS -->

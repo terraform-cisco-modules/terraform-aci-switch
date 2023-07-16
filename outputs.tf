@@ -25,6 +25,11 @@ output "interface_profiles" {
   }
 }
 
+output "static_node_mgmt_address" {
+  description = "Static Node Management addresses: Tenants: {mgmt} => Node Management Addresses => Static Node Management Addresses"
+  value       = { for v in sort(keys(aci_static_node_mgmt_address.map)) : v => aci_static_node_mgmt_address.map[v].id }
+}
+
 output "switches" {
   description = <<EOF
     Switch Identifiers
