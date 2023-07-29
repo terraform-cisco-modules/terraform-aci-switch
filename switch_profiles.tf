@@ -247,7 +247,8 @@ ________________________________________________________________________________
 */
 resource "aci_rest_managed" "spine_interface_selectors" {
   depends_on = [
-    aci_spine_interface_profile.map
+    aci_spine_interface_profile.map,
+    aci_rest_managed.spine_interface_policy_group
   ]
   for_each   = { for k, v in local.interface_selectors : k => v if v.node_type == "spine" }
   dn         = "${aci_spine_interface_profile.map[each.value.node_id].id}/shports-${each.value.interface_name}-typ-range"

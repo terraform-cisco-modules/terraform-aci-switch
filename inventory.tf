@@ -8,7 +8,7 @@ GUI Location:
 _______________________________________________________________________________________________________________________
 */
 resource "aci_rest_managed" "fabric_membership" {
-  for_each   = { for v in local.switch_profiles : v.name => v }
+  for_each   = { for v in local.switch_profiles : "${v.pod_id}:${v.node_id}" => v }
   dn         = "uni/controller/nodeidentpol/nodep-${each.value.serial_number}"
   class_name = "fabricNodeIdentP"
   content = {
