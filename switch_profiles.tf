@@ -36,7 +36,6 @@ resource "aci_leaf_profile" "map" {
 /*_____________________________________________________________________________________________________________________
 
 API Information:
- - Class: "infraLeafS"
  - Class: "infraRsAccNodePGrp"
  - Distinguished Name: "uni/infra/nprof-{name}/leaves-{selector_name}-typ-range"
 GUI Location:
@@ -213,7 +212,7 @@ resource "aci_access_port_block" "leaf_port_blocks" {
 
 API Information:
  - Class: "infraPortBlk"
- - Distinguished Name: " uni/infra/accportprof-{interface_profile}/hports-{interface_selector}-typ-{selector_type}/portblk-{interface_selector}"
+ - Distinguished Name: " uni/infra/accportprof-{interface_profile}/hports-{interface_selector}-typ-{selector_type}/portblk-{interface_block}"
 GUI Location:
  - Fabric > Access Policies > Interfaces > Leaf Interfaces > Profiles > {interface_profile}:{interface_selector}
 _______________________________________________________________________________________________________________________
@@ -239,8 +238,10 @@ resource "aci_access_sub_port_block" "leaf_port_subblocks" {
 /*_____________________________________________________________________________________________________________________
 
 API Information:
- - Class: "infraHPortS"
- - Distinguished Name: "uni/infra/accportprof-{interface_profile}/hports-{interface_selector}-typ-range"
+ - Class: "infraSHPortS"
+ - Class: "infraPortBlk"
+ - Distinguished Name: "uni/infra/spaccportprof-{interface_profile}/shports-{interface_selector}-typ-range"
+ - Distinguished Name: "uni/infra/spaccportprof-{interface_profile}/shports-{interface_selector}-typ-range/portblk-{interface_block}"
 GUI Location:
  - Fabric > Access Policies > Interfaces > Spine Interfaces > Profiles > {interface_profile}:{interface_selector}
 _______________________________________________________________________________________________________________________

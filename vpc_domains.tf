@@ -5,6 +5,7 @@ API Information:
  - Distinguished Name: "uni/fabric/protpol/expgep-{name}"
 GUI Location:
  - Fabric > Access Policies > Policies > Virtual Port Channel default
+_______________________________________________________________________________________________________________________
 */
 resource "aci_vpc_explicit_protection_group" "vpc_domains" {
   depends_on = [

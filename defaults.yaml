@@ -25,7 +25,11 @@ defaults:
         ipv6_gateway: ''
         management_epg: default
       interfaces:
+        access_or_native_vlan: null
+        allowed_vlans: ''
         description: ''
+        encapsulation_type: vlan
+        instrumentation_immediacy: on-demand
         interface: 1/1
         interface_description: ''
         policy_group: ''
