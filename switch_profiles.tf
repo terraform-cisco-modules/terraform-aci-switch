@@ -256,6 +256,7 @@ resource "aci_rest_managed" "spine_interface_selectors" {
   class_name = "infraSHPortS"
   content = {
     #    name  = each.value.interface_name
+    #annotation = "orchestrator:terraform"
     descr = each.value.description
   }
   child {

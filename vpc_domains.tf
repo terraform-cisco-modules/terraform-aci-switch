@@ -1,6 +1,26 @@
 /*_____________________________________________________________________________________________________________________
 
 API Information:
+ - Class: "fabricProtPol"
+ - Distinguished Name: "uni/fabric/protpol"
+GUI Location:
+ - Fabric > Access Policies > Policies > Virtual Port Channel default
+_______________________________________________________________________________________________________________________
+*/
+resource "aci_rest_managed" "virtual_port_channel_default" {
+  for_each   = { for v in ["default"] : v => v if length(local.vpc_domains) > 0 }
+  class_name = "fabricProtPol"
+  dn         = "uni/fabric/protpol"
+  content = {
+    #annotation = "orchestrator:terraform"
+    descr = "Managed by Terraform"
+  }
+}
+
+
+/*_____________________________________________________________________________________________________________________
+
+API Information:
  - Class: "fabricExplicitGEp"
  - Distinguished Name: "uni/fabric/protpol/expgep-{name}"
 GUI Location:
