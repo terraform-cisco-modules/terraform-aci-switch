@@ -36,8 +36,8 @@ defaults:
         policy_group_type: access
         sub_port: false
       monitoring_policy: default
-      name: '**REQUIRED**'
-      node_id: '**REQUIRED**'
+      name: ''
+      node_id: ''
       node_type: leaf
       ooband_addressing:
         ipv4_address: 198.18.2.101/24
@@ -48,7 +48,7 @@ defaults:
       policy_group: default
       pod_id: 1
       role: unspecified
-      serial_number: '**REQUIRED**'
+      serial_number: ''
       two_slot_leaf: false
     vpc_domains:
       domain_id: null # REQUIRED ID Between 1-1000

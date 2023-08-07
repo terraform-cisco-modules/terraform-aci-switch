@@ -10,7 +10,7 @@ A Terraform module to configure ACI Switch Configuration.
 
 ### A comprehensive example using this module is available below:
 
-## [Easy ACI](https://github.com/terraform-cisco-modules/easy-aci-complete)
+## [Easy ACI](https://github.com/terraform-cisco-modules/easy-aci)
 
 ## Requirements
 
@@ -22,14 +22,12 @@ A Terraform module to configure ACI Switch Configuration.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aci"></a> [aci](#provider\_aci) | >= 2.9.0 |
+| <a name="provider_aci"></a> [aci](#provider\_aci) | 2.10.1 |
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_switch"></a> [switch](#input\_switch) | Switch Model data. | `any` | n/a | yes |
-| <a name="input_annotations"></a> [annotations](#input\_annotations) | The Version of this Script. | <pre>list(object(<br>    {<br>      key   = string<br>      value = string<br>    }<br>  ))</pre> | <pre>[<br>  {<br>    "key": "orchestrator",<br>    "value": "terraform:easy-aci:v2.0"<br>  }<br>]</pre> | no |
-| <a name="input_apic_version"></a> [apic\_version](#input\_apic\_version) | The Version of ACI Running in the Environment. | `string` | `"5.2(4e)"` | no |
 ## Outputs
 
 | Name | Description |
