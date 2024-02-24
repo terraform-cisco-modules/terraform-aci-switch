@@ -1,3 +1,8 @@
+/*_____________________________________________________________________________________________________________________
+
+Fabric Inventory — Outputs
+_______________________________________________________________________________________________________________________
+*/
 output "fabric_inventory" {
   description = "Fabric Membership Identifiers: Fabric => Inventory => Fabric Membership"
   value = {
@@ -8,6 +13,11 @@ output "fabric_inventory" {
   }
 }
 
+/*_____________________________________________________________________________________________________________________
+
+Interface Profiles — Outputs
+_______________________________________________________________________________________________________________________
+*/
 output "interface_profiles" {
   description = <<EOF
     Interface Profile Identifiers
@@ -25,11 +35,21 @@ output "interface_profiles" {
   }
 }
 
+/*_____________________________________________________________________________________________________________________
+
+Static Node Mgmt Addresses — Outputs
+_______________________________________________________________________________________________________________________
+*/
 output "static_node_mgmt_address" {
   description = "Static Node Management addresses: Tenants: {mgmt} => Node Management Addresses => Static Node Management Addresses"
   value       = { for v in sort(keys(aci_static_node_mgmt_address.map)) : v => aci_static_node_mgmt_address.map[v].id }
 }
 
+/*_____________________________________________________________________________________________________________________
+
+Switch Profiles — Outputs
+_______________________________________________________________________________________________________________________
+*/
 output "switches" {
   description = <<EOF
     Switch Identifiers
@@ -47,6 +67,11 @@ output "switches" {
   }
 }
 
+/*_____________________________________________________________________________________________________________________
+
+VPC Domains — Outputs
+_______________________________________________________________________________________________________________________
+*/
 output "vpc_domains" {
   description = "VPC Domain Identifiers: Fabric => Access Policies => Policies => Switch => Virtual Port Channel default"
   value = {
