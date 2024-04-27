@@ -18,6 +18,7 @@ defaults:
     switch_profiles:
       description: ''
       external_pool_id: 0
+      fabric_membership: true
       inband_addressing:
         ipv4_address: ''
         ipv4_gateway: ''
@@ -49,6 +50,7 @@ defaults:
       pod_id: 1
       role: unspecified
       serial_number: ''
+      switch_profile: true
       two_slot_leaf: false
     vpc_domains:
       domain_id: null # REQUIRED ID Between 1-1000

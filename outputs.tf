@@ -15,22 +15,28 @@ output "fabric_inventory" {
 
 /*_____________________________________________________________________________________________________________________
 
-Interface Profiles — Outputs
+Interface Selectors — Outputs
 _______________________________________________________________________________________________________________________
 */
-output "interface_profiles" {
+output "interface_selectors" {
   description = <<EOF
     Interface Profile Identifiers
       interfaces:
-        leaf_interface_profiles:  Fabric => Access Policies => Interfaces => Leaf Interfaces => Profiles
-        spine_interface_profiles: Fabric => Access Policies => Interfaces => Spine Interfaces => Profiles
+        Fabric => Access Policies => Interfaces => Leaf Interfaces => Profiles => Selectors
+        Fabric => Access Policies => Interfaces => Spine Interfaces => Profiles => Selectors
   EOF
   value = {
-    leaf_interface_profiles = {
-      for v in sort(keys(aci_leaf_profile.map)) : v => aci_leaf_profile.map[v].id
+    leaf_interface_selectors = {
+      for v in sort(keys(aci_access_port_selector.map)) : v => {
+        dn = aci_access_port_selector.map[v].id
+        policy_group = aci_access_port_selector.map[v].relation_infra_rs_acc_base_grp
+        }
     }
-    spine_interface_profiles = {
-      for v in sort(keys(aci_spine_profile.map)) : v => aci_spine_profile.map[v].id
+    spine_interface_selectors = {
+      for v in sort(keys(aci_rest_managed.spine_interface_policy_group)) : v => {
+        dn = aci_rest_managed.spine_interface_policy_group[v].id
+        policy_group = aci_rest_managed.spine_interface_policy_group[v].content.tDn
+        }
     }
   }
 }
@@ -52,14 +58,24 @@ ________________________________________________________________________________
 */
 output "switches" {
   description = <<EOF
+    Interface Profile Identifiers
+      interfaces:
+        leaf_interface_profiles:  Fabric => Access Policies => Interfaces => Leaf Interfaces => Profiles
+        spine_interface_profiles: Fabric => Access Policies => Interfaces => Spine Interfaces => Profiles
     Switch Identifiers
       switches:
         leaf_profiles:  Fabric => Access Policies => Switches => Leaf Switches => Profiles
         spine_profiles: Fabric => Access Policies => Switches => Spine Switches => Profiles
   EOF
   value = {
+    leaf_interface_profiles = {
+      for v in sort(keys(aci_leaf_interface_profile.map)) : v => aci_leaf_interface_profile.map[v].id
+    }
     leaf_profiles = {
       for v in sort(keys(aci_leaf_profile.map)) : v => aci_leaf_profile.map[v].id
+    }
+    spine_interface_profiles = {
+      for v in sort(keys(aci_spine_interface_profile.map)) : v => aci_spine_interface_profile.map[v].id
     }
     spine_profiles = {
       for v in sort(keys(aci_spine_profile.map)) : v => aci_spine_profile.map[v].id

@@ -17,10 +17,8 @@ locals {
   #__________________________________________________________
 
   switch_profiles = {
-    for k, v in lookup(var.switch, "switch_profiles", []) : v.node_id => {
-      description       = lookup(v, "description", local.sprofile.description)
-      external_pool_id  = lookup(v, "external_pool_id", local.sprofile.external_pool_id)
-      inband_addressing = lookup(v, "inband_addressing", [])
+    for k, v in lookup(var.switch, "switch_profiles", []) : v.node_id => merge(local.sprofile, v, {
+      inband_addressing = lookup(v, "inband_addressing", {})
       interfaces = [
         for i in lookup(v, "interfaces", []) : {
           description = lookup(i, "description", local.sprofile.interfaces.description)
@@ -36,17 +34,11 @@ locals {
 
         }
       ]
-      policy_group      = lookup(v, "policy_group", local.sprofile.policy_group)
-      monitoring_policy = lookup(v, "monitoring_policy", local.sprofile.monitoring_policy)
       name              = v.name
       node_id           = v.node_id
-      node_type         = lookup(v, "node_type", local.sprofile.node_type)
-      ooband_addressing = lookup(v, "ooband_addressing", [])
-      pod_id            = lookup(v, "pod_id", local.sprofile.pod_id)
-      role              = lookup(v, "role", local.sprofile.role)
+      ooband_addressing = lookup(v, "ooband_addressing", {})
       serial_number     = v.serial_number
-      two_slot_leaf     = lookup(v, "two_slot_leaf", local.sprofile.two_slot_leaf)
-    }
+    })
   }
 
   interface_selectors = {

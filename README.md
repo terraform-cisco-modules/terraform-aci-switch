@@ -33,9 +33,8 @@ A Terraform module to configure ACI Switch Configuration.
 | Name | Description |
 |------|-------------|
 | <a name="output_fabric_inventory"></a> [fabric\_inventory](#output\_fabric\_inventory) | Fabric Membership Identifiers: Fabric => Inventory => Fabric Membership |
-| <a name="output_interface_profiles"></a> [interface\_profiles](#output\_interface\_profiles) | Interface Profile Identifiers<br>      interfaces:<br>        leaf\_interface\_profiles:  Fabric => Access Policies => Interfaces => Leaf Interfaces => Profiles<br>        spine\_interface\_profiles: Fabric => Access Policies => Interfaces => Spine Interfaces => Profiles |
 | <a name="output_static_node_mgmt_address"></a> [static\_node\_mgmt\_address](#output\_static\_node\_mgmt\_address) | Static Node Management addresses: Tenants: {mgmt} => Node Management Addresses => Static Node Management Addresses |
-| <a name="output_switches"></a> [switches](#output\_switches) | Switch Identifiers<br>      switches:<br>        leaf\_profiles:  Fabric => Access Policies => Switches => Leaf Switches => Profiles<br>        spine\_profiles: Fabric => Access Policies => Switches => Spine Switches => Profiles |
+| <a name="output_switches"></a> [switches](#output\_switches) | Interface Profile Identifiers<br>      interfaces:<br>        leaf\_interface\_profiles:  Fabric => Access Policies => Interfaces => Leaf Interfaces => Profiles<br>        spine\_interface\_profiles: Fabric => Access Policies => Interfaces => Spine Interfaces => Profiles<br>    Switch Identifiers<br>      switches:<br>        leaf\_profiles:  Fabric => Access Policies => Switches => Leaf Switches => Profiles<br>        spine\_profiles: Fabric => Access Policies => Switches => Spine Switches => Profiles |
 | <a name="output_vpc_domains"></a> [vpc\_domains](#output\_vpc\_domains) | VPC Domain Identifiers: Fabric => Access Policies => Policies => Switch => Virtual Port Channel default |
 ## Resources
 

@@ -26,7 +26,7 @@ ________________________________________________________________________________
 */
 resource "aci_leaf_profile" "map" {
   depends_on                   = [aci_leaf_interface_profile.map]
-  for_each                     = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
+  for_each                     = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" && v.switch_profile == true }
   description                  = each.value.description
   name                         = "${local.npfx.leaf.switch_profiles}${each.value.name}${local.nsfx.leaf.switch_profiles}"
   relation_infra_rs_acc_port_p = [aci_leaf_interface_profile.map[each.key].id]
@@ -48,7 +48,7 @@ resource "aci_leaf_selector" "map" {
     aci_leaf_profile.map,
   ]
   for_each = {
-    for k, v in local.switch_profiles : k => v if v.node_type != "spine"
+    for k, v in local.switch_profiles : k => v if v.node_type != "spine" && v.switch_profile == true
   }
   description                      = each.value.description
   leaf_profile_dn                  = aci_leaf_profile.map[each.key].id
@@ -61,7 +61,7 @@ resource "aci_node_block" "leaf_profile_blocks" {
   depends_on = [
     aci_leaf_selector.map
   ]
-  for_each              = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" }
+  for_each              = { for k, v in local.switch_profiles : k => v if v.node_type != "spine" && v.switch_profile == true }
   description           = each.value.description
   from_                 = each.value.node_id
   name                  = "blk${each.value.node_id}-${each.value.node_id}"
@@ -99,7 +99,7 @@ resource "aci_spine_profile" "map" {
   depends_on = [
     aci_spine_interface_profile.map
   ]
-  for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
+  for_each    = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" && v.switch_profile == true }
   description = each.value.description
   name        = "${local.npfx.spine.switch_profiles}${each.value.name}${local.nsfx.spine.switch_profiles}"
   relation_infra_rs_sp_acc_port_p = [
@@ -121,7 +121,7 @@ resource "aci_spine_switch_association" "map" {
   depends_on = [
     aci_spine_profile.map,
   ]
-  for_each                               = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
+  for_each                               = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" && v.switch_profile == true }
   spine_profile_dn                       = aci_spine_profile.map[each.key].id
   description                            = each.value.description
   name                                   = each.value.name
@@ -144,7 +144,7 @@ resource "aci_rest_managed" "spine_profile_node_blocks" {
     aci_spine_profile.map,
     aci_spine_switch_association.map
   ]
-  for_each   = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" }
+  for_each   = { for k, v in local.switch_profiles : k => v if v.node_type == "spine" && v.switch_profile == true }
   dn         = "${aci_spine_profile.map[each.key].id}/spines-${each.value.name}-typ-range/nodeblk-blk${each.key}-${each.key}"
   class_name = "infraNodeBlk"
   content = {
@@ -197,7 +197,7 @@ resource "aci_access_port_block" "leaf_port_blocks" {
     aci_leaf_interface_profile.map,
     aci_access_port_selector.map
   ]
-  for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port == "" && v.node_type != "spine" }
+  for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port == false && v.node_type != "spine" }
   access_port_selector_dn = aci_access_port_selector.map[each.key].id
   description             = each.value.interface_description
   from_card               = each.value.module
@@ -222,7 +222,7 @@ resource "aci_access_sub_port_block" "leaf_port_subblocks" {
     aci_leaf_interface_profile.map,
     aci_access_port_selector.map
   ]
-  for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port != "" && v.node_type != "spine" }
+  for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port == true && v.node_type != "spine" }
   access_port_selector_dn = aci_access_port_selector.map[each.key].id
   description             = each.value.interface_description
   from_card               = each.value.module
@@ -299,7 +299,7 @@ ________________________________________________________________________________
 */
 resource "aci_static_node_mgmt_address" "map" {
   depends_on = [aci_rest_managed.fabric_membership]
-  for_each   = local.static_node_mgmt_addresses
+  for_each   = { for k, v in local.static_node_mgmt_addresses : k => v if length(v.ipv4_address) > 0 || length(v.ipv6_address) > 0 }
   addr       = each.value.ipv4_address
   # description       = each.value.description
   gw                = each.value.ipv4_gateway
