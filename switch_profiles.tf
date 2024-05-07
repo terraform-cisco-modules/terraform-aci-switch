@@ -197,7 +197,7 @@ resource "aci_access_port_block" "leaf_port_blocks" {
     aci_leaf_interface_profile.map,
     aci_access_port_selector.map
   ]
-  for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port == false && v.node_type != "spine" }
+  for_each                = { for k, v in local.interface_selectors : k => v if v.sub_port == "" && v.node_type != "spine" }
   access_port_selector_dn = aci_access_port_selector.map[each.key].id
   description             = each.value.interface_description
   from_card               = each.value.module
